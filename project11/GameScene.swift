@@ -10,6 +10,14 @@ import SpriteKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
+    var counter = 0 {
+        didSet{
+            if counter == 5 {
+                editLabel.text = "Game over!"
+            }
+        }
+    }
+    let nameArrays = ["ballRed","ballBlue","ballCyan","ballGreen","ballGrey","ballPurple","ballYellow"]
     
     var score = 0 {
         didSet {
@@ -67,6 +75,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
+        let xLocation = touch.location(in: self).x
+        let yLocation: CGFloat = 660
+        let locationForBall = CGPoint(x: xLocation, y: yLocation)
+        
         let objects = nodes(at: location)
         
         if objects.contains(editLabel) {
@@ -87,13 +99,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 addChild(box)
                 
             } else {
-                let ball = SKSpriteNode(imageNamed: "ballRed")
-                ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2.0)
-                ball.physicsBody?.restitution = 0.4
-                ball.physicsBody?.contactTestBitMask = ball.physicsBody?.collisionBitMask ?? 0
-                ball.position = location
-                ball.name = "ball"
-                addChild(ball)
+                counter += 1
+                if counter <= 5 {
+                    //let ball = SKSpriteNode(imageNamed: "ballRed")
+                    let ballName = nameArrays.randomElement()
+                    let ball = SKSpriteNode(imageNamed: ballName!)
+                    ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2.0)
+                    ball.physicsBody?.restitution = 0.4
+                    ball.physicsBody?.contactTestBitMask = ball.physicsBody?.collisionBitMask ?? 0
+                    ball.position = locationForBall
+                    ball.name = "ball"
+                    addChild(ball)
+                } else {
+                    return
+                }
             }
         }
     }
@@ -139,9 +158,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if object.name == "good" {
             destroy(ball: ball)
             score += 1
+            object.removeFromParent()
         } else if object.name == "bad" {
             destroy(ball: ball)
             score -= 1
+            object.removeFromParent()
         }
     }
     
